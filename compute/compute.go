@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/cmplx"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -16,10 +17,10 @@ func main() {
 	file_name := fmt.Sprintf("output_%d_%02d_%02d-%02d_%02d_%02d",
 		current_time.Year(), current_time.Month(), current_time.Day(),
 		current_time.Hour(), current_time.Minute(), current_time.Second())
-	const width, height = 900, 900
+	const width, height = 1024, 1024
 	n := width * height
 
-	const max_it = 256
+	const max_it = 128
 
 	// // Reverse seahorse
 	const center_r = -0.743030
@@ -37,21 +38,25 @@ func main() {
 	dataset := make([][]string, 0, n+1)
 	header := make([]string, 0, 6)
 	header = append(header, "pixel_x", "pixel_y", "it_escape", "r_part", "im_part")
-	dataset = append(dataset, header)
-
+	data_c := make(chan []string, n+1)
+	data_c <- header
+	var wg sync.WaitGroup
+	wg.Add(n)
 	fmt.Printf("Computing...\n")
 	start_comp := time.Now()
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			r := scale_px_to_coord(x, width, min_r, max_r)
-			i := scale_px_to_coord(y, height, min_i, max_i)
-			r, i, it := mandelbrot(r, i, max_it)
-
-			data := make([]string, 0, 6)
-			data = append(data, fmt.Sprint(x), fmt.Sprint(y), fmt.Sprint(it), fmt.Sprintf("%.6g", r), fmt.Sprintf("%.6g", i))
-			dataset = append(dataset, data)
+			x, y := x, y
+			go func() {
+				worker(x, y, width, height, min_r, max_r, min_i, max_i, max_it, data_c)
+				for i := 0; i < len(data_c); i++ {
+					dataset = append(dataset, <-data_c)
+				}
+				wg.Done()
+			}()
 		}
 	}
+	wg.Wait()
 	elapsed_comp := time.Since(start_comp)
 	fmt.Printf("Computing %v points over %v iterations took %s\n", n, max_it, elapsed_comp)
 
@@ -68,6 +73,16 @@ func main() {
 		}
 	}
 	fmt.Printf("Data saved to file %v\n", file_name)
+}
+
+func worker(x int, y int, width int, height int, min_r float64, max_r float64, min_i float64, max_i float64, max_it int, data_c chan<- []string) {
+	r := scale_px_to_coord(x, width-1, min_r, max_r)
+	i := scale_px_to_coord(y, height-1, min_i, max_i)
+	r, i, it := mandelbrot(r, i, max_it)
+
+	data := make([]string, 0, 6)
+	data = append(data, fmt.Sprint(x), fmt.Sprint(y), fmt.Sprint(it), fmt.Sprintf("%.6g", r), fmt.Sprintf("%.6g", i))
+	data_c <- data
 }
 
 func scale_px_to_coord(im_val int, im_max int, mend_min float64, mend_max float64) float64 {

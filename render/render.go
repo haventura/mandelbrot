@@ -25,12 +25,24 @@ func main() {
 	var path_flag = flag.String("path", "../output_data/output.csv", "Relative path of the csv file.")
 	flag.Parse()
 	dataset, err := readData(*path_flag)
+
 	s := strings.Split(*path_flag, "\\")
 	img_name := strings.Split(s[len(s)-1], ".")[0]
-	width, _ := strconv.Atoi(dataset[len(dataset)-1][0])
-	width += 1
-	height, _ := strconv.Atoi(dataset[len(dataset)-1][1])
-	height += 1
+
+	max_x := 0
+	max_y := 0
+	for _, line := range dataset {
+		x, _ := strconv.Atoi(line[0])
+		y, _ := strconv.Atoi(line[1])
+		if x > max_x {
+			max_x = x
+		}
+		if y > max_y {
+			max_y = y
+		}
+	}
+	width := max_x + 1
+	height := max_y + 1
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 	colormap := compute_colormap(1024)
 	if err != nil {
