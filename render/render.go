@@ -38,13 +38,12 @@ func main() {
 	}
 
 	for _, line := range dataset {
-
 		pixel_x, _ := strconv.Atoi(line[0])
 		pixel_y, _ := strconv.Atoi(line[1])
 		it_escape, _ := strconv.Atoi(line[2])
 		r_part, _ := strconv.ParseFloat(line[3], 64)
 		im_part, _ := strconv.ParseFloat(line[4], 64)
-		mod, _ := strconv.ParseFloat(line[5], 64)
+		mod := math.Sqrt(math.Pow(r_part, 2) + math.Pow(im_part, 2))
 		if mod < 2 {
 			//pts = append(pts, plotter.XY{X: x, Y: y})
 			img.Set(pixel_x, pixel_y, color.NRGBA{

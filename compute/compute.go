@@ -19,7 +19,7 @@ func main() {
 	const width, height = 900, 900
 	n := width * height
 
-	const max_it = 512
+	const max_it = 256
 
 	// // Reverse seahorse
 	const center_r = -0.743030
@@ -36,7 +36,7 @@ func main() {
 
 	dataset := make([][]string, 0, n+1)
 	header := make([]string, 0, 6)
-	header = append(header, "pixel_x", "pixel_y", "it_escape", "r_part", "im_part", "mod")
+	header = append(header, "pixel_x", "pixel_y", "it_escape", "r_part", "im_part")
 	dataset = append(dataset, header)
 
 	fmt.Printf("Computing...\n")
@@ -45,10 +45,10 @@ func main() {
 		for y := 0; y < height; y++ {
 			r := scale_px_to_coord(x, width, min_r, max_r)
 			i := scale_px_to_coord(y, height, min_i, max_i)
-			mod, r, i, it := mandelbrot(r, i, max_it)
+			r, i, it := mandelbrot(r, i, max_it)
 
 			data := make([]string, 0, 6)
-			data = append(data, fmt.Sprint(x), fmt.Sprint(y), fmt.Sprint(it), fmt.Sprint(r), fmt.Sprint(i), fmt.Sprint(mod))
+			data = append(data, fmt.Sprint(x), fmt.Sprint(y), fmt.Sprint(it), fmt.Sprintf("%.6g", r), fmt.Sprintf("%.6g", i))
 			dataset = append(dataset, data)
 		}
 	}
@@ -80,7 +80,7 @@ func scale_px_to_coord(im_val int, im_max int, mend_min float64, mend_max float6
 	return scaled
 }
 
-func mandelbrot(r_part float64, i_part float64, max_iteration int) (float64, float64, float64, int) {
+func mandelbrot(r_part float64, i_part float64, max_iteration int) (float64, float64, int) {
 	c := complex(r_part, i_part)
 	var z complex128 = complex(0, 0)
 	var mod float64
@@ -94,5 +94,5 @@ func mandelbrot(r_part float64, i_part float64, max_iteration int) (float64, flo
 			break
 		}
 	}
-	return mod, real(z), imag(z), n
+	return real(z), imag(z), n
 }
