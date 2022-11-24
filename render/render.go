@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	// go run . -path="..\output_data\output_2022_11_18-23_44_13.csv"
+	// go run . --path="..\output_data\output_2022_11_18-23_44_13.csv"
 	fmt.Printf("Rendering...\n")
 	start_rend := time.Now()
 
@@ -85,28 +85,20 @@ func main() {
 }
 
 func readData(fileName string) ([][]string, error) {
-
 	f, err := os.Open(fileName)
-
 	if err != nil {
 		return [][]string{}, err
 	}
-
 	defer f.Close()
-
 	r := csv.NewReader(f)
-
 	// skip first line
 	if _, err := r.Read(); err != nil {
 		return [][]string{}, err
 	}
-
 	records, err := r.ReadAll()
-
 	if err != nil {
 		return [][]string{}, err
 	}
-
 	return records, nil
 }
 
