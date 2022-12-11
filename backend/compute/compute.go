@@ -139,7 +139,7 @@ func render(width int, height int, dataset chan point, img_name string, cmap_nam
 func get_color_from_cmap(c complex128, it int, cmap []color.NRGBA) color.NRGBA {
 	//found on https://stackoverflow.com/questions/16500656/which-color-gradient-is-used-to-color-mandelbrot-in-wikipedia
 	smoothed := math.Log2(math.Log2(math.Pow(real(c), 2)+math.Pow(imag(c), 2)) / 2)
-	
+
 	color_index := (int)(math.Sqrt(float64(it)+10.0-smoothed)*256) % len(cmap)
 	color := cmap[color_index]
 	return color

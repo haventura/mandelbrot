@@ -1,0 +1,295 @@
+<div class="pannel">
+  <!-- Search panel with list of constellations -->
+  <button
+    type="button"
+    class="button button_add"
+    [disabled]="new_constellation || edited_constellation"
+    (click)="handle_event_new_constellation()"
+  >
+    <i class="fa-solid fa-plus"></i> New constellation
+  </button>
+
+  <div class="search">
+    <input
+      type="text"
+      [(ngModel)]="constellation_name_search"
+      placeholder="Search..."
+    />
+    <button
+      type="button"
+      class="button button_search"
+      (click)="search_constellation_name(constellation_name_search)"
+      [disabled]="new_constellation || edited_constellation"
+    >
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </div>
+
+  <ul class="constellation_list">
+    <li
+      *ngFor="let constellation of constellation_list"
+      (click)="
+        handle_event_select_constellation(constellation.constellation_id)
+      "
+    >
+      <span class="badge"><i class="fa-solid fa-star"></i></span>
+      <p class="name">{{ constellation.name }}</p>
+    </li>
+  </ul>
+</div>
+
+<div class="info_card">
+  <!-- Card with relevant informations -->
+  <p
+    class="info_card_header"
+    *ngIf="
+      selected_constellation || edited_constellation || new_constellation;
+      else no_info
+    "
+  >
+    {{
+      selected_constellation
+        ? selected_constellation.name
+        : edited_constellation
+        ? edited_constellation.name
+        : "New constellation"
+    }}
+    informations:
+  </p>
+
+  <ng-template #no_info>
+    <p class="info_card_header">No informations to display.</p>
+  </ng-template>
+
+  <div class="info_grid" *ngIf="selected_constellation">
+    <!-- Static display without input, displayed when a constellation is selected -->
+    <label for="info_name" class="name_header">Name:</label>
+    <label for="info_description" class="description_header"
+      >Description:</label
+    >
+    <label for="info_right_ascension" class="right_ascension_header"
+      >Right ascension:</label
+    >
+    <label for="info_declination" class="declination_header"
+      >Declination:</label
+    >
+    <label for="info_area" class="area_header">Area:</label>
+    <label for="info_stars" class="stars_header">Stars:</label>
+    <span class="info_name" id="info_name">{{
+      selected_constellation.name
+    }}</span>
+    <span class="info_description" id="info_description">{{
+      selected_constellation.description
+    }}</span>
+    <span class="info_right_ascension" id="info_right_ascension">{{
+      selected_constellation.right_ascension
+    }}</span>
+    <span class="info_declination" id="info_declination">{{
+      selected_constellation.declination
+    }}</span>
+    <span class="info_area" id="info_area">{{
+      selected_constellation.area
+    }}</span>
+    <span
+      *ngIf="
+        selected_constellation.stars && selected_constellation.stars.length > 0
+      "
+    >
+      <span
+        class="info_stars"
+        id="info_stars"
+        *ngFor="let star of selected_constellation.stars"
+        (click)="handle_event_lookup_star(star.name)"
+      >
+        {{ star.name }};
+      </span>
+    </span>
+    <span
+      class="info_stars"
+      id="info_stars"
+      *ngIf="
+        !selected_constellation.stars ||
+        selected_constellation.stars.length === 0
+      "
+    >
+      /
+    </span>
+  </div>
+
+  <div class="info_grid" *ngIf="edited_constellation || new_constellation">
+    <!-- Display with inputs, displayed when a new constellation is created or a constellation is edited -->
+    <label for="info_name" class="name_header">Name:</label>
+    <label for="info_description" class="description_header"
+      >Description:</label
+    >
+    <label for="info_right_ascension" class="right_ascension_header"
+      >Right ascension:</label
+    >
+    <label for="info_declination" class="declination_header"
+      >Declination:</label
+    >
+    <label for="info_area" class="area_header">Area:</label>
+    <label for="info_stars" class="stars_header">Stars:</label>
+    <input
+      type="text"
+      class="input_name"
+      [ngModel]="
+        new_constellation ? new_constellation!.name : edited_constellation!.name
+      "
+      (ngModelChange)="
+        new_constellation
+          ? (new_constellation!.name = $event)
+          : (edited_constellation!.name = $event)
+      "
+      (keydown.enter)="
+        new_constellation
+          ? handle_event_confirm_new()
+          : handle_event_confirm_edit()
+      "
+    />
+
+    <input
+      type="text"
+      class="input_description"
+      [ngModel]="
+        new_constellation
+          ? new_constellation!.description
+          : edited_constellation!.description
+      "
+      (ngModelChange)="
+        new_constellation
+          ? (new_constellation!.description = $event)
+          : (edited_constellation!.description = $event)
+      "
+      (keydown.enter)="
+        new_constellation
+          ? handle_event_confirm_new()
+          : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="text"
+      class="input_right_ascension"
+      [ngModel]="
+        new_constellation
+          ? new_constellation!.right_ascension
+          : edited_constellation!.right_ascension
+      "
+      (ngModelChange)="
+        new_constellation
+          ? (new_constellation!.right_ascension = $event)
+          : (edited_constellation!.right_ascension = $event)
+      "
+      (keydown.enter)="
+        new_constellation
+          ? handle_event_confirm_new()
+          : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="text"
+      class="input_declination"
+      [ngModel]="
+        new_constellation
+          ? new_constellation!.declination
+          : edited_constellation!.declination
+      "
+      (ngModelChange)="
+        new_constellation
+          ? (new_constellation!.declination = $event)
+          : (edited_constellation!.declination = $event)
+      "
+      (keydown.enter)="
+        new_constellation
+          ? handle_event_confirm_new()
+          : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="number"
+      class="input_area"
+      [ngModel]="
+        new_constellation ? new_constellation!.area : edited_constellation!.area
+      "
+      (ngModelChange)="
+        new_constellation
+          ? (new_constellation!.area = $event)
+          : (edited_constellation!.area = $event)
+      "
+      (keydown.enter)="
+        new_constellation
+          ? handle_event_confirm_new()
+          : handle_event_confirm_edit()
+      "
+    />
+    <span
+      *ngIf="
+        edited_constellation &&
+        edited_constellation.stars &&
+        edited_constellation.stars.length > 0
+      "
+    >
+      <span
+        class="info_stars"
+        id="info_stars"
+        *ngFor="let star of edited_constellation.stars"
+      >
+        {{ star.name }};
+      </span>
+    </span>
+    <span
+      class="info_stars"
+      id="info_stars"
+      *ngIf="
+        !edited_constellation ||
+        !edited_constellation.stars ||
+        edited_constellation.stars.length === 0
+      "
+    >
+      /
+    </span>
+  </div>
+
+  <button
+    *ngIf="selected_constellation"
+    type="button"
+    class="button button_edit"
+    (click)="handle_event_edit_constellation()"
+  >
+    <i class="fa-solid fa-pen-to-square"></i> Edit
+  </button>
+  <button
+    *ngIf="selected_constellation"
+    type="button"
+    class="button button_delete"
+    (click)="handle_event_delete_constellation()"
+  >
+    <i class="fa-solid fa-trash-can"></i> Delete
+  </button>
+  <button
+    *ngIf="new_constellation"
+    type="button"
+    class="button button_confirm"
+    [disabled]="!new_constellation.name || new_constellation.name === ''"
+    (click)="handle_event_confirm_new()"
+  >
+    <i class="fa-solid fa-check"></i> Confirm
+  </button>
+  <button
+    *ngIf="edited_constellation"
+    type="button"
+    class="button button_confirm"
+    [disabled]="!edited_constellation.name || edited_constellation.name === ''"
+    (click)="handle_event_confirm_edit()"
+  >
+    <i class="fa-solid fa-check"></i> Confirm
+  </button>
+  <button
+    *ngIf="new_constellation || edited_constellation"
+    type="button"
+    class="button button_cancel"
+    (click)="handle_event_cancel()"
+  >
+    <i class="fa-solid fa-xmark"></i> Cancel
+  </button>
+</div>

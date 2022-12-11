@@ -18,6 +18,8 @@ services:
         # Starts up 5 replicas of the same image
         deploy:
             replicas: 5
+        volumes:
+            - /data_volume:/app/data_volume
     # nginx container
     nginx:
         # specifies the latest nginx image

@@ -1,0 +1,57 @@
+.title {
+    float: left;
+    font-size: 30px;
+    padding: 20px 20px 20px 20px;
+    margin: 0px;
+    height: 30px;
+}
+
+.button_star,
+.button_constellation{
+    float: left;
+    font-size: 24px;
+    padding: 23px 20px 23px 20px;
+    margin: 0px;
+    height: 24px;
+}
+
+.star_window,
+.constellation_window{
+    top: 70px;
+    left: 0px;
+    position:absolute;
+    bottom: 0px;
+    padding: 0px;
+}
+
+.button_star:hover,
+.button_constellation:hover,
+.button_star:focus,
+.button_constellation:focus {
+  background-color: #000;
+}
+
+.pagetop {
+    position:fixed;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    background-color: #282A35;
+    color: #f1f1f1;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+.footer {
+    position:fixed;
+    left: 20vw;
+    right: 0px;
+    bottom: 0px;
+    
+}
+.footer_text{
+    font-family: Verdana,sans-serif;
+    font-size: 12px;
+    text-align: center;
+    opacity: 0.60;
+    line-height: 1.5;
+}

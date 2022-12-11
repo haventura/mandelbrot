@@ -1,0 +1,298 @@
+<div class="pannel">
+  <!-- Search panel with list of stars -->
+  <button
+    type="button"
+    class="button button_add"
+    [disabled]="new_star || edited_star"
+    (click)="handle_event_new_star()"
+  >
+    <i class="fa-solid fa-plus"></i> New star
+  </button>
+
+  <div class="search">
+    <input type="text" [(ngModel)]="star_name_search" placeholder="Search..." />
+    <button
+      type="button"
+      class="button button_search"
+      (click)="search_star_name(star_name_search)"
+      [disabled]="new_star || edited_star"
+    >
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </div>
+
+  <ul class="star_list">
+    <li
+      *ngFor="let star of star_list"
+      (click)="handle_event_select_star(star.star_id)"
+    >
+      <span class="badge"><i class="fa-solid fa-star"></i></span>
+      <p class="name">{{ star.name }}</p>
+    </li>
+  </ul>
+</div>
+
+<div class="info_card">
+  <!-- Card with relevant informations -->
+  <p
+    class="info_card_header"
+    *ngIf="selected_star || edited_star || new_star; else no_info"
+  >
+    {{
+      selected_star
+        ? selected_star.name
+        : edited_star
+        ? edited_star.name
+        : "New star"
+    }}
+    informations:
+  </p>
+
+  <ng-template #no_info>
+    <p class="info_card_header">No informations to display.</p>
+  </ng-template>
+
+  <div class="info_grid" *ngIf="selected_star">
+    <!-- Static display without input, displayed when a star is selected -->
+    <label for="info_name" class="name_header">Name:</label>
+    <label for="info_description" class="description_header"
+      >Description:</label
+    >
+    <label for="info_right_ascension" class="right_ascension_header"
+      >Right ascension:</label
+    >
+    <label for="info_declination" class="declination_header"
+      >Declination:</label
+    >
+    <label for="info_apparent_magnitude" class="apparent_magnitude_header"
+      >Apparent magnitude:</label
+    >
+    <label for="info_mass" class="mass_header">Mass:</label>
+    <label for="info_radius" class="radius_header">Radius:</label>
+    <label for="info_age" class="age_header">Age:</label>
+    <label for="info_constellation" class="constellation_header"
+      >Constellation:</label
+    >
+    <span class="info_name" id="info_name">{{ selected_star.name }}</span>
+    <span class="info_description" id="info_description">{{
+      selected_star.description
+    }}</span>
+    <span class="info_right_ascension" id="info_right_ascension">{{
+      selected_star.right_ascension
+    }}</span>
+    <span class="info_declination" id="info_declination">{{
+      selected_star.declination
+    }}</span>
+    <span class="info_apparent_magnitude" id="info_apparent_magnitude">{{
+      selected_star.apparent_magnitude
+    }}</span>
+    <span class="info_mass" id="info_mass">{{ selected_star.mass }}</span>
+    <span class="info_radius" id="info_radius">{{ selected_star.radius }}</span>
+    <span class="info_age" id="info_age">{{ selected_star.age }}</span>
+    <span
+      class="info_constellation"
+      id="info_constellation"
+      (click)="handle_event_lookup_constellation()"
+      >{{
+        selected_star.constellation ? selected_star.constellation.name : "/"
+      }}</span
+    >
+  </div>
+
+  <div class="info_grid" *ngIf="edited_star || new_star">
+    <!-- Display with inputs, displayed when a new star is created or a star is edited -->
+    <label for="info_name" class="name_header">Name:</label>
+    <label for="info_description" class="description_header"
+      >Description:</label
+    >
+    <label for="info_right_ascension" class="right_ascension_header"
+      >Right ascension:</label
+    >
+    <label for="info_declination" class="declination_header"
+      >Declination:</label
+    >
+    <label for="info_apparent_magnitude" class="apparent_magnitude_header"
+      >Apparent magnitude:</label
+    >
+    <label for="info_mass" class="mass_header">Mass:</label>
+    <label for="info_radius" class="radius_header">Radius:</label>
+    <label for="info_age" class="age_header">Age:</label>
+    <label for="info_constellation" class="constellation_header"
+      >Constellation:</label
+    >
+    <input
+      type="text"
+      class="input_name"
+      [ngModel]="new_star ? new_star.name : edited_star!.name"
+      (ngModelChange)="
+        new_star ? (new_star.name = $event) : (edited_star!.name = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+
+    <input
+      type="text"
+      class="input_description"
+      [ngModel]="new_star ? new_star!.description : edited_star!.description"
+      (ngModelChange)="
+        new_star
+          ? (new_star!.description = $event)
+          : (edited_star!.description = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="text"
+      class="input_right_ascension"
+      [ngModel]="
+        new_star ? new_star!.right_ascension : edited_star!.right_ascension
+      "
+      (ngModelChange)="
+        new_star
+          ? (new_star!.right_ascension = $event)
+          : (edited_star!.right_ascension = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="text"
+      class="input_declination"
+      [ngModel]="new_star ? new_star!.declination : edited_star!.declination"
+      (ngModelChange)="
+        new_star
+          ? (new_star!.declination = $event)
+          : (edited_star!.declination = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="number"
+      class="input_apparent_magnitude"
+      [ngModel]="
+        new_star
+          ? new_star!.apparent_magnitude
+          : edited_star!.apparent_magnitude
+      "
+      (ngModelChange)="
+        new_star
+          ? (new_star!.apparent_magnitude = $event)
+          : (edited_star!.apparent_magnitude = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="number"
+      class="input_mass"
+      [ngModel]="new_star ? new_star!.mass : edited_star!.mass"
+      (ngModelChange)="
+        new_star ? (new_star!.mass = $event) : (edited_star!.mass = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="number"
+      class="input_radius"
+      [ngModel]="new_star ? new_star!.radius : edited_star!.radius"
+      (ngModelChange)="
+        new_star ? (new_star!.radius = $event) : (edited_star!.radius = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+    <input
+      type="number"
+      class="input_age"
+      id="input_age"
+      [ngModel]="new_star ? new_star!.age : edited_star!.age"
+      (ngModelChange)="
+        new_star ? (new_star!.age = $event) : (edited_star!.age = $event)
+      "
+      (keydown.enter)="
+        new_star ? handle_event_confirm_new() : handle_event_confirm_edit()
+      "
+    />
+    <select
+      #select
+      name="constellation_option"
+      class="input_constellation"
+      id="constellation_option"
+      [ngModel]="new_star ? new_star.constellation : edited_star!.constellation"
+      (ngModelChange)="
+        new_star
+          ? (new_star.constellation = $event)
+          : (edited_star!.constellation = $event)
+      "
+    >
+      <option
+        *ngIf="edited_star && edited_star.constellation"
+        [ngValue]="edited_star.constellation"
+        disabled
+      >
+        {{ edited_star.constellation.name }}
+      </option>
+      <option [ngValue]="null">/</option>
+      <option
+        *ngFor="let constellation of constellation_list"
+        [ngValue]="constellation"
+      >
+        {{ constellation.name }}
+      </option>
+    </select>
+  </div>
+
+  <button
+    *ngIf="selected_star"
+    type="button"
+    class="button button_edit"
+    (click)="handle_event_edit_star()"
+  >
+    <i class="fa-solid fa-pen-to-square"></i> Edit
+  </button>
+  <button
+    *ngIf="selected_star"
+    type="button"
+    class="button button_delete"
+    (click)="handle_event_delete_star()"
+  >
+    <i class="fa-solid fa-trash-can"></i> Delete
+  </button>
+  <button
+    *ngIf="new_star"
+    type="button"
+    class="button button_confirm"
+    [disabled]="!new_star.name || new_star.name === ''"
+    (click)="handle_event_confirm_new()"
+  >
+    <i class="fa-solid fa-check"></i> Confirm
+  </button>
+  <button
+    *ngIf="edited_star"
+    type="button"
+    class="button button_confirm"
+    [disabled]="!edited_star.name || edited_star.name === ''"
+    (click)="handle_event_confirm_edit()"
+  >
+    <i class="fa-solid fa-check"></i> Confirm
+  </button>
+  <button
+    *ngIf="new_star || edited_star"
+    type="button"
+    class="button button_cancel"
+    (click)="handle_event_cancel()"
+  >
+    <i class="fa-solid fa-xmark"></i> Cancel
+  </button>
+</div>
