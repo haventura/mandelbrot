@@ -21,12 +21,12 @@ def main():
     st.set_page_config(page_title="Mandelbrot renderer", page_icon="🤖")
     st.title("Mandelbrot")
     with st.form("my_form"):
-        data.min_r = st.number_input("Minimum real value", min_value=-2, max_value=2, key="min_r")
-        data.max_r = st.number_input("Maximum real value", min_value=-2, max_value=2, key="max_r")
-        data.min_i = st.number_input("Minimum imaginary value", min_value=-2, max_value=2, key="min_i")
-        data.max_i = st.number_input("Maximum imaginary value", min_value=-2, max_value=2, key="max_i")
-        data.max_iteration = st.number_input("Iterations", min_value=1, key="max_iteration")
-        data.colormap_name = st.text_input("Color map", key="colormap")
+        data.min_r = st.number_input("Minimum real value", value=-2.23845, min_value=-2.23845, max_value=0.83845, step=0.1, format="%.10f", key="min_r")
+        data.max_r = st.number_input("Maximum real value", value=0.83845, min_value=-2.23845, max_value=0.83845, step=0.1, format="%.10f", key="max_r")
+        data.min_i = st.number_input("Minimum imaginary value", value=-1.53845, min_value=-1.53845, max_value=1.53845, step=0.1, format="%.10f", key="min_i")
+        data.max_i = st.number_input("Maximum imaginary value", value=1.53845, min_value=-1.53845, max_value=1.53845, step=0.1, format="%.10f", key="max_i")
+        data.max_iteration = st.number_input("Iterations", value=512, min_value=1, key="max_iteration")
+        data.colormap_name = st.text_input("Color map", value="mycolormap", key="colormap")
         data.width = 1024
         data.height = 1024
 
@@ -37,8 +37,9 @@ def main():
             url = 'http://localhost:5000/compute'
             print(data)
             x = requests.post(url, data = json.dumps(dataclasses.asdict(data)))
-            st.write(x)
-
+            image_data = x.content.decode("utf-8")
+            html = f'<img src="{image_data}"/>'
+            st.write(html, unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
