@@ -20,19 +20,15 @@ func handleHello(w http.ResponseWriter, req *http.Request) {
 }
 
 func handleCompute(w http.ResponseWriter, req *http.Request) {
-	log.Println("it works")
 	log.Println(req.Method, req.RequestURI)
 	reqBody, _ := io.ReadAll(req.Body)
-	var data model.Compute_data 
-	json.Unmarshal(reqBody, &data)
-
+	var data model.Compute_data
+	json.Unmarshal([]byte(reqBody), &data)
 	fmt.Println(data)
-	
-
 	compute.Compute(data)
 	fmt.Fprintln(w, "Computed!")
 }
-	
+
 func main() {
 	// registers handleHello to GET /hello
 	http.HandleFunc("/hello", handleHello)

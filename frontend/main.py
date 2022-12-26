@@ -36,7 +36,7 @@ def main():
             st.write("Result")
             url = 'http://localhost:5000/compute'
             print(data)
-            x = requests.post(url, json = json.dumps(dataclasses.asdict(data)))
+            x = requests.post(url, data = json.dumps(dataclasses.asdict(data)))
             st.write(x)
 
 

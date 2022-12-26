@@ -115,7 +115,7 @@ func mandelbrot(c complex128, max_iteration int) (complex128, int) {
 func render(width int, height int, dataset chan point, img_name string, cmap_name string) {
 
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
-	colormap := read_cmap_from_csv(fmt.Sprintf("./colormaps/%v.csv", cmap_name))
+	colormap := read_cmap_from_csv(fmt.Sprintf("./colormap/%v.csv", cmap_name))
 	for p := range dataset {
 		if cmplx.Abs(p.complex) < 2 {
 			img.Set(p.x, p.y, color.NRGBA{
