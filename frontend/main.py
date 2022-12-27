@@ -46,7 +46,7 @@ def main():
         submitted = st.form_submit_button("Submit")
 
         if submitted:
-            url = 'http://localhost:5000/compute'
+            url = 'http://localhost:5000/compute/single'
             print(data)
             x = requests.post(url, data = json.dumps(dataclasses.asdict(data)))
             image_data = x.content.decode("utf-8")

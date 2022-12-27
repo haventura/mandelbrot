@@ -1,12 +1,12 @@
 package compute
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"image"
 	"image/color"
 	"image/png"
-	"log"
 	"mandelbrot/andre/main/model"
 	"math"
 	"math/cmplx"
@@ -25,12 +25,7 @@ type point struct {
 	escape_it int
 }
 
-func Compute(data model.Compute_data) string {
-	current_time := time.Now()
-	file_name := fmt.Sprintf("output_%d_%02d_%02d-%02d_%02d_%02d",
-		current_time.Year(), current_time.Month(), current_time.Day(),
-		current_time.Hour(), current_time.Minute(), current_time.Second())
-	file_path := fmt.Sprintf("./output_images/%v.png", file_name)
+func Compute_image(data model.Image_data) []byte {
 	width := data.Width
 	height := data.Height
 
@@ -53,10 +48,41 @@ func Compute(data model.Compute_data) string {
 	fmt.Printf("Computing %v points over %v iterations took %s\n", n, data.Max_iteration, elapsed_comp)
 
 	start_rend := time.Now()
-	render(width, height, data_c, file_path, data.Colormap_name)
+	image := render(width, height, data_c, data.Colormap_name)
 	elapsed_rend := time.Since(start_rend)
 	fmt.Printf("Rendering took %s", elapsed_rend)
-	return file_path
+	return image
+}
+
+func Compute_image_chunck(data model.Image_chunk_data) []byte {
+	min_x := data.Chunck_min_x
+	min_y := data.Chunck_min_y
+	width := data.Chunck_width
+	height := data.Chunck_height
+
+	n := width * height
+	data_c := make(chan point, n)
+
+	fmt.Printf("Computing...\n")
+	wg.Add(n)
+	start_comp := time.Now()
+	for x := min_x; x < width; x++ {
+		x := x
+		for y := min_y; y < height; y++ {
+			y := y
+			go worker(x, y, width, height, data.Chunck_min_r, data.Chunck_max_r, data.Chunck_min_i, data.Chunck_max_i, data.Max_iteration, data_c)
+		}
+	}
+	wg.Wait()
+	close(data_c)
+	elapsed_comp := time.Since(start_comp)
+	fmt.Printf("Computing %v points over %v iterations took %s\n", n, data.Max_iteration, elapsed_comp)
+
+	start_rend := time.Now()
+	image := render(width, height, data_c, data.Colormap_name)
+	elapsed_rend := time.Since(start_rend)
+	fmt.Printf("Rendering took %s", elapsed_rend)
+	return image
 }
 
 func worker(x int, y int, width int, height int, min_r float64, max_r float64, min_i float64, max_i float64, max_iteration int, data_c chan<- point) {
@@ -95,33 +121,26 @@ func mandelbrot(c complex128, max_iteration int) (complex128, int) {
 	return z, n
 }
 
-func render(width int, height int, dataset chan point, file_path string, cmap_name string) {
+func render(width int, height int, dataset chan point, cmap_name string) []byte {
 
-	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+	image := image.NewNRGBA(image.Rect(0, 0, width, height))
 	colormap := read_cmap_from_csv(fmt.Sprintf("./colormap/%v.csv", cmap_name))
 	for p := range dataset {
 		if cmplx.Abs(p.complex) < 2 {
-			img.Set(p.x, p.y, color.NRGBA{
+			image.Set(p.x, p.y, color.NRGBA{
 				R: uint8(0),
 				G: uint8(0),
 				B: uint8(0),
 				A: 255,
 			})
 		} else {
-			img.Set(p.x, p.y, get_color_from_cmap(p.complex, p.escape_it, colormap))
+			image.Set(p.x, p.y, get_color_from_cmap(p.complex, p.escape_it, colormap))
 		}
 	}
-	f, err := os.Create(file_path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := png.Encode(f, img); err != nil {
-		f.Close()
-		log.Fatal(err)
-	}
-	if err := f.Close(); err != nil {
-		log.Fatal(err)
-	}
+	buffer := new(bytes.Buffer)
+	png.Encode(buffer, image)
+	image_bytes := buffer.Bytes()
+	return image_bytes
 }
 
 func get_color_from_cmap(c complex128, it int, cmap []color.NRGBA) color.NRGBA {

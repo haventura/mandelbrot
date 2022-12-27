@@ -10,46 +10,47 @@ import (
 	"mandelbrot/andre/main/compute"
 	"mandelbrot/andre/main/model"
 	"net/http"
-	"os"
 )
 
-func handleHello(w http.ResponseWriter, req *http.Request) {
-
+func handle_hello(w http.ResponseWriter, req *http.Request) {
 	log.Println(req.Method, req.RequestURI)
-
-	// Returns hello world! as a response
 	fmt.Fprintln(w, "Hello world!")
 }
 
-func handleCompute(w http.ResponseWriter, req *http.Request) {
+func handle_compute_image(w http.ResponseWriter, req *http.Request) {
 	log.Println(req.Method, req.RequestURI)
 	reqBody, _ := io.ReadAll(req.Body)
-	var data model.Compute_data
+	var data model.Image_data
 	json.Unmarshal([]byte(reqBody), &data)
 	fmt.Println(data)
-	file_path := compute.Compute(data)
-	output_image := image_to_base64(file_path)
+	image := compute.Compute_image(data)
+	output_image := bytes_to_base64(image)
+	fmt.Fprint(w, output_image)
+}
+
+func handle_compute_image_chunk(w http.ResponseWriter, req *http.Request) {
+	log.Println(req.Method, req.RequestURI)
+	reqBody, _ := io.ReadAll(req.Body)
+	var data model.Image_chunk_data
+	json.Unmarshal([]byte(reqBody), &data)
+	fmt.Println(data)
+	image := compute.Compute_image_chunck(data)
+	output_image := bytes_to_base64(image)
 	fmt.Fprint(w, output_image)
 }
 
 func main() {
-	// registers handleHello to GET /hello
-	http.HandleFunc("/hello", handleHello)
-	http.HandleFunc("/compute", handleCompute)
-	// starts the server on port 5000
+	http.HandleFunc("/hello", handle_hello)
+	http.HandleFunc("/compute/single", handle_compute_image)
+	http.HandleFunc("/compute/chunk", handle_compute_image_chunk)
 	if err := http.ListenAndServe(":5000", nil); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func image_to_base64(file_path string) string {
-	bytes, err := os.ReadFile(file_path)
-	if err != nil {
-		log.Fatal(err)
-	}
+func bytes_to_base64(data []byte) string {
 	var base64Encoding string
 	base64Encoding += "data:image/png;base64,"
-	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
-	//fmt.Println(base64Encoding)
+	base64Encoding += base64.StdEncoding.EncodeToString(data)
 	return base64Encoding
 }
