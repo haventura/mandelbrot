@@ -34,27 +34,8 @@ func Compute(data model.Compute_data) string {
 	width := data.Width
 	height := data.Height
 
-	//const width, height = 1024, 1024
-	//const max_iteration = 128
 	n := width * height
 	data_c := make(chan point, n)
-
-	// // Reverse seahorse
-	// const center_r = -0.743030
-	// const center_i = 0.126433
-	// const radius = 0.009
-	// const min_r, max_r = center_r - radius, center_r + radius
-	// const min_i, max_i = center_i - radius, center_i + radius
-	// //img full
-	// const min_r, max_r = -2.0, 0.5
-	// const min_i, max_i = -1.25, 1.25
-	// //img 1
-	// const min_r, max_r = -2.0, -1.5
-	// const min_i, max_i = -0.25, 0.25
-	// "mycolormap"
-	// Coordinates of the center: Re(c) = -.7, Im(c) = 0
-	// Horizontal diameter of the image: 3.076,9
-	// 1.53845
 
 	fmt.Printf("Computing...\n")
 	wg.Add(n)
