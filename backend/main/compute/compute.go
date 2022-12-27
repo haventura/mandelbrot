@@ -39,7 +39,7 @@ func Compute_image(data model.Image_data) []byte {
 		x := x
 		for y := 0; y < height; y++ {
 			y := y
-			go worker(x, y, width, height, data.Min_r, data.Max_r, data.Min_i, data.Max_i, data.Max_iteration, data_c)
+			go worker(x, y, 0, 0, width-1, height-1, data.Min_r, data.Max_r, data.Min_i, data.Max_i, data.Max_iteration, data_c)
 		}
 	}
 	wg.Wait()
@@ -55,22 +55,24 @@ func Compute_image(data model.Image_data) []byte {
 }
 
 func Compute_image_chunck(data model.Image_chunk_data) []byte {
-	min_x := data.Chunck_min_x
-	min_y := data.Chunck_min_y
-	width := data.Chunck_width
-	height := data.Chunck_height
+	min_x := 0
+	min_y := 0
+	chunk_width := data.Chunck_width
+	chunk_height := data.Chunck_height
+	max_x := chunk_width - 1
+	max_y := chunk_height - 1
 
-	n := width * height
+	n := chunk_width * chunk_height
 	data_c := make(chan point, n)
 
 	fmt.Printf("Computing...\n")
 	wg.Add(n)
 	start_comp := time.Now()
-	for x := min_x; x < width; x++ {
+	for x := min_x; x <= max_x; x++ {
 		x := x
-		for y := min_y; y < height; y++ {
+		for y := min_y; y <= max_y; y++ {
 			y := y
-			go worker(x, y, width, height, data.Chunck_min_r, data.Chunck_max_r, data.Chunck_min_i, data.Chunck_max_i, data.Max_iteration, data_c)
+			go worker(x, y, min_x, min_y, max_x, max_y, data.Chunck_min_r, data.Chunck_max_r, data.Chunck_min_i, data.Chunck_max_i, data.Max_iteration, data_c)
 		}
 	}
 	wg.Wait()
@@ -79,16 +81,16 @@ func Compute_image_chunck(data model.Image_chunk_data) []byte {
 	fmt.Printf("Computing %v points over %v iterations took %s\n", n, data.Max_iteration, elapsed_comp)
 
 	start_rend := time.Now()
-	image := render(width, height, data_c, data.Colormap_name)
+	image := render(chunk_width, chunk_height, data_c, data.Colormap_name)
 	elapsed_rend := time.Since(start_rend)
-	fmt.Printf("Rendering took %s", elapsed_rend)
+	fmt.Printf("Rendering took %s\n", elapsed_rend)
 	return image
 }
 
-func worker(x int, y int, width int, height int, min_r float64, max_r float64, min_i float64, max_i float64, max_iteration int, data_c chan<- point) {
+func worker(x int, y int, x_min int, y_min, x_max int, y_max int, r_min float64, r_max float64, i_min float64, i_max float64, max_iteration int, data_c chan<- point) {
 	defer wg.Done()
-	r := scale_px_to_coord(x, width-1, min_r, max_r)
-	i := scale_px_to_coord(y, height-1, max_i, min_i) // !!! y-axis direction of pixels and complex-plane are inverted !!!
+	r := scale_px_to_coord(x, x_min, x_max, r_min, r_max)
+	i := scale_px_to_coord(y, y_min, y_max, i_max, i_min) // !!! y-axis direction of pixels and complex-plane are inverted !!!
 	c := complex(r, i)
 	z, it := mandelbrot(c, max_iteration)
 
@@ -96,12 +98,12 @@ func worker(x int, y int, width int, height int, min_r float64, max_r float64, m
 	data_c <- data
 }
 
-func scale_px_to_coord(im_val int, im_max int, mend_min float64, mend_max float64) float64 {
+func scale_px_to_coord(pixel_value int, pixel_minimum int, pixel_maximum int, coord_minimum float64, coord_maximum float64) float64 {
 	//        (b-a)(x - min)
 	// f(x) = --------------  + a
 	// 		     max - min
 
-	scaled := ((mend_max - mend_min) * float64(im_val) / float64(im_max)) + mend_min
+	scaled := ((coord_maximum - coord_minimum) * float64(pixel_value-pixel_minimum) / float64(pixel_maximum-pixel_minimum)) + coord_minimum
 
 	return scaled
 }
@@ -122,23 +124,22 @@ func mandelbrot(c complex128, max_iteration int) (complex128, int) {
 }
 
 func render(width int, height int, dataset chan point, cmap_name string) []byte {
-
-	image := image.NewNRGBA(image.Rect(0, 0, width, height))
+	my_image := image.NewNRGBA(image.Rect(0, 0, width, height))
 	colormap := read_cmap_from_csv(fmt.Sprintf("./colormap/%v.csv", cmap_name))
 	for p := range dataset {
 		if cmplx.Abs(p.complex) < 2 {
-			image.Set(p.x, p.y, color.NRGBA{
+			my_image.Set(p.x, p.y, color.NRGBA{
 				R: uint8(0),
 				G: uint8(0),
 				B: uint8(0),
 				A: 255,
 			})
 		} else {
-			image.Set(p.x, p.y, get_color_from_cmap(p.complex, p.escape_it, colormap))
+			my_image.Set(p.x, p.y, get_color_from_cmap(p.complex, p.escape_it, colormap))
 		}
 	}
 	buffer := new(bytes.Buffer)
-	png.Encode(buffer, image)
+	png.Encode(buffer, my_image)
 	image_bytes := buffer.Bytes()
 	return image_bytes
 }
