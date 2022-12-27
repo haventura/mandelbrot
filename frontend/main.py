@@ -18,7 +18,6 @@ class Data:
 # run with python -m streamlit run main.py
 
 def main():
-    data = Data()
     st.set_page_config(page_title="Mandelbrot Generator", page_icon="🚀", layout="wide")
     st.title("Mandelbrot Generator")
     col1, col2, col3 = st.columns([1,2,1])
@@ -27,6 +26,7 @@ def main():
         st.session_state["center_i"] = .0
         st.session_state["diameter"] = 2.5
     with col1.form("my_form"):
+        data = Data()
         st.header("🧪 Parameters")
         center_r = st.number_input("Center Re(c)", min_value=-3., max_value=3., step=0.1, format="%.15g", key="center_r")
         center_i = st.number_input("Center Im(c)", min_value=-3., max_value=3., step=0.1, format="%.15g", key="center_i")
@@ -67,6 +67,7 @@ def main():
         st.subheader("⛰️ Valley:")
         st.button("Try me!", key="valley_button", on_click=update_coordinates, args=(-0.74364386269, 0.13182590271, 0.00000013526))
 
+    st.write('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
     hide_footer_style = """
             <style>
             #MainMenu {visibility: hidden;}

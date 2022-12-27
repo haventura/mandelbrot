@@ -62,7 +62,7 @@ func Compute(data model.Compute_data) string {
 func worker(x int, y int, width int, height int, min_r float64, max_r float64, min_i float64, max_i float64, max_iteration int, data_c chan<- point) {
 	defer wg.Done()
 	r := scale_px_to_coord(x, width-1, min_r, max_r)
-	i := scale_px_to_coord(y, height-1, min_i, max_i)
+	i := scale_px_to_coord(y, height-1, max_i, min_i) // !!! y-axis direction of pixels and complex-plane are inverted !!!
 	c := complex(r, i)
 	z, it := mandelbrot(c, max_iteration)
 
