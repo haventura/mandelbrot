@@ -6,7 +6,7 @@ import base64
 from PIL import Image
 import io
 import math
-import aiohttp
+from aiohttp import ClientSession, ClientTimeout
 import asyncio
 
 @dataclasses.dataclass
@@ -83,18 +83,9 @@ async def main():
                 print(image_data)
                 chunks = divide_in_chunk(image_data, chunks_amount)
                 image = Image.new("RGBA", (resolution, resolution))
-                async with aiohttp.ClientSession() as session:
-                    for chunk_data in chunks:
-                        print(chunk_data)
-                        async with session.post(url, data = json.dumps(dataclasses.asdict(chunk_data))) as response:
-                            awaited_response = await response.read()
-                            response_as_base64 = awaited_response.decode("utf-8")
-                            bytes_response = base64.b64decode(response_as_base64.split(',')[1])
-                            sub_image = Image.open(io.BytesIO(bytes_response))
-                            image.paste(sub_image, (chunk_data.chunk_min_x, chunk_data.chunk_min_y))
-                            sub_image.close()
-                            image_placeholder.image(image, use_column_width="always")
-
+                async with ClientSession(timeout=ClientTimeout(total=3600)) as session:
+                    coros = [task_coro(session, chunk_data, url, image, image_placeholder) for chunk_data in chunks]
+                    await asyncio.gather(*coros)
                 img_byte_arr = io.BytesIO()
                 image.save(img_byte_arr, format='PNG')
                 img_byte_arr = img_byte_arr.getvalue()
@@ -177,7 +168,15 @@ def get_chunks_steps(max):
             continue
         return output
 
-
+async def task_coro(session, chunk_data, url, image, image_placeholder):
+    async with session.post(url, data = json.dumps(dataclasses.asdict(chunk_data))) as response:
+        awaited_response = await response.read()
+        response_as_base64 = awaited_response.decode("utf-8")
+        bytes_response = base64.b64decode(response_as_base64.split(',')[1])
+        sub_image = Image.open(io.BytesIO(bytes_response))
+        image.paste(sub_image, (chunk_data.chunk_min_x, chunk_data.chunk_min_y))
+        sub_image.close()
+        image_placeholder.image(image, use_column_width="always")
 
 if __name__ == '__main__':
     asyncio.run(main())
