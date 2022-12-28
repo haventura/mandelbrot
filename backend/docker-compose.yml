@@ -15,9 +15,9 @@ services:
         # Connects the API to a common api.network bridge
         networks: 
             - "api.network"
-        # Starts up 5 replicas of the same image
+        # Starts up 6 replicas of the same image
         deploy:
-            replicas: 5
+            replicas: 6
         volumes:
             - /data_volume:/app/data_volume
     # nginx container

@@ -6,6 +6,8 @@ import base64
 from PIL import Image
 import io
 import math
+import aiohttp
+import asyncio
 
 @dataclasses.dataclass
 class Image_data:
@@ -35,7 +37,7 @@ class Image_chunk_data:
 
 # run with python -m streamlit run main.py
 
-def main():
+async def main():
     st.set_page_config(page_title="Mandelbrot Generator", page_icon="🚀", layout="wide")
     st.title("Mandelbrot Generator")
 
@@ -69,7 +71,7 @@ def main():
 
         if submitted:
             if not chunks:
-                url = 'http://localhost:5000/compute/single'
+                url = 'http://localhost:80/compute/single'
                 print(image_data)
                 response = requests.post(url, data = json.dumps(dataclasses.asdict(image_data)))
                 response_as_base64 = response.content.decode("utf-8")
@@ -77,19 +79,21 @@ def main():
                 col2.image(image, use_column_width="always")
                 col1.download_button("💾 Download", image, "mandelbrot.png", key="download_button")
             else:
-                url = 'http://localhost:5000/compute/chunk'
+                url = 'http://localhost:80/compute/chunk'
                 print(image_data)
                 chunks = divide_in_chunk(image_data, chunks_amount)
                 image = Image.new("RGBA", (resolution, resolution))
-                for chunk_data in chunks:
-                    print(chunk_data)
-                    response = requests.post(url, data = json.dumps(dataclasses.asdict(chunk_data)))
-                    response_as_base64 = response.content.decode("utf-8")
-                    bytes_response = base64.b64decode(response_as_base64.split(',')[1])
-                    sub_image = Image.open(io.BytesIO(bytes_response))
-                    image.paste(sub_image, (chunk_data.chunk_min_x, chunk_data.chunk_min_y))
-                    sub_image.close()
-                    image_placeholder.image(image, use_column_width="always")
+                async with aiohttp.ClientSession() as session:
+                    for chunk_data in chunks:
+                        print(chunk_data)
+                        async with session.post(url, data = json.dumps(dataclasses.asdict(chunk_data))) as response:
+                            awaited_response = await response.read()
+                            response_as_base64 = awaited_response.decode("utf-8")
+                            bytes_response = base64.b64decode(response_as_base64.split(',')[1])
+                            sub_image = Image.open(io.BytesIO(bytes_response))
+                            image.paste(sub_image, (chunk_data.chunk_min_x, chunk_data.chunk_min_y))
+                            sub_image.close()
+                            image_placeholder.image(image, use_column_width="always")
 
                 img_byte_arr = io.BytesIO()
                 image.save(img_byte_arr, format='PNG')
@@ -176,4 +180,4 @@ def get_chunks_steps(max):
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

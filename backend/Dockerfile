@@ -1,5 +1,5 @@
 # Base image for building the go project
-FROM golang:1.14-alpine AS build
+FROM golang:1.19-alpine AS build
 
 # Updates the repository and installs git
 RUN apk update && apk upgrade && \
@@ -8,13 +8,11 @@ RUN apk update && apk upgrade && \
 # Switches to /tmp/app as the working directory, similar to 'cd'
 WORKDIR /tmp/app
 
-## If you have a go.mod and go.sum file in your project, uncomment lines 13, 14, 15
-
-# COPY go.mod .
-# COPY go.sum .
-# RUN go mod download
-
 COPY . .
+
+WORKDIR /tmp/app/main
+
+RUN go mod download
 
 # Builds the current project to a binary file called api
 # The location of the binary file is /tmp/app/out/api
@@ -30,7 +28,9 @@ FROM alpine:latest
 RUN apk add ca-certificates
 
 # Copies the binary file from the BUILD container to /app folder
-COPY --from=build /tmp/app/out/api /app/api
+COPY --from=build /tmp/app/main/out/api /app/api
+
+COPY --from=build /tmp/app/main/colormap /app/colormap
 
 # Switches working directory to /app
 WORKDIR "/app"
