@@ -1,5 +1,8 @@
 # Distributed Mandelbrot Generator
 
+| ![mandelbrot](saved_images/mandelbrot.png)  | ![seahorse](saved_images/seahorse.png)           |
+| ![valley](saved_images/valley.png)      | ![crown](saved_images/crown.png) |
+
 ## Performance 
 
 ### 29/12/2022
