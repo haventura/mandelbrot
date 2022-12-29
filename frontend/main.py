@@ -20,21 +20,6 @@ class Image_data:
     max_i:         float = 1.25
     colormap_name: str   = "BWY"
 
-@dataclasses.dataclass
-class Image_chunk_data:
-	total_width:   int  = 512 
-	total_height:  int  = 512
-	chunk_width:  int   = 512
-	chunk_height: int   = 512
-	chunk_min_x:  int   = 0
-	chunk_min_y:  int   = 0
-	chunk_min_r:  float = -2.0
-	chunk_max_r:  float = 0.5
-	chunk_min_i:  float = -1.25
-	chunk_max_i:  float = 1.25
-	max_iteration: int  = 256
-	colormap_name: str  = "BWY"
-
 # run with python -m streamlit run main.py
 
 async def main():
@@ -70,21 +55,19 @@ async def main():
         submitted = st.form_submit_button("Submit")
 
         if submitted:
+            url = 'http://localhost:80/compute'
+            print(image_data)
             if not chunks:
-                url = 'http://localhost:80/compute/single'
-                print(image_data)
                 response = requests.post(url, data = json.dumps(dataclasses.asdict(image_data)))
                 response_as_base64 = response.content.decode("utf-8")
                 image = base64.b64decode(response_as_base64.split(',')[1])
-                col2.image(image, use_column_width="always")
+                image_placeholder.image(image, use_column_width="always")
                 col1.download_button("💾 Download", image, "mandelbrot.png", key="download_button")
-            else:
-                url = 'http://localhost:80/compute/chunk'
-                print(image_data)
+            else:      
                 chunks = divide_in_chunk(image_data, chunks_amount)
                 image = Image.new("RGBA", (resolution, resolution))
                 async with ClientSession(timeout=ClientTimeout(total=3600)) as session:
-                    coros = [task_coro(session, chunk_data, url, image, image_placeholder) for chunk_data in chunks]
+                    coros = [task_coro(session, chunk_position, chunk_data, url, image, image_placeholder) for chunk_position, chunk_data in chunks.items()]
                     await asyncio.gather(*coros)
                 img_byte_arr = io.BytesIO()
                 image.save(img_byte_arr, format='PNG')
@@ -119,34 +102,28 @@ def update_coordinates(center_r, center_i, diameter):
     st.session_state["center_i"] = center_i
     st.session_state["diameter"] = diameter    
 
-def divide_in_chunk(image_data: Image_data, n_chunk) -> list[Image_chunk_data]:
-    n_horizontal_chunk = int(math.sqrt(n_chunk))
-    n_vertical_chunk = int(math.sqrt(n_chunk))
-    list_of_chunk = []
+def divide_in_chunk(image_data: Image_data, n_chunk):
+    n_horizontal_chunk = n_vertical_chunk = int(math.sqrt(n_chunk))
+    chunk_pixel_width = image_data.width // n_horizontal_chunk
+    chunk_pixel_height = image_data.height // n_vertical_chunk    
+    chunk_real_width = (image_data.max_r - image_data.min_r) / n_horizontal_chunk
+    chunk_imaginary_width = (image_data.max_i - image_data.min_i) / n_vertical_chunk
+    dict_of_chunk = {}
     for i in range(n_vertical_chunk):
         for j in range(n_horizontal_chunk):
-            image_chunk_data = Image_chunk_data()
-            image_chunk_data.total_width = image_data.width
-            image_chunk_data.total_height = image_data.height
+            chunk_min_x = chunk_pixel_width * j
+            chunk_min_y = chunk_pixel_height * i
+            image_chunk_data = Image_data()
+            image_chunk_data.width = chunk_pixel_width
+            image_chunk_data.height = chunk_pixel_height
+            image_chunk_data.min_r = image_data.min_r + (chunk_real_width * j)
+            image_chunk_data.max_r = image_data.min_r + (chunk_real_width * (j + 1))
+            image_chunk_data.max_i = image_data.min_i + (chunk_imaginary_width * i)       # !!! inverted y axis for pixels !!!
+            image_chunk_data.min_i = image_data.min_i + (chunk_imaginary_width * (i + 1))
             image_chunk_data.max_iteration = image_data.max_iteration
             image_chunk_data.colormap_name = image_data.colormap_name
-
-            image_chunk_data.chunk_width = image_data.width // n_horizontal_chunk
-            image_chunk_data.chunk_height = image_data.height // n_vertical_chunk
-            image_chunk_data.chunk_min_x = image_chunk_data.chunk_width * j
-            image_chunk_data.chunk_min_y = image_chunk_data.chunk_height * i
-
-            r_width = (image_data.max_r - image_data.min_r) / n_horizontal_chunk
-            i_width = (image_data.max_i - image_data.min_i) / n_vertical_chunk
-
-            image_chunk_data.chunk_min_r = image_data.min_r + (r_width * j)
-            image_chunk_data.chunk_max_r = image_data.min_r + (r_width * (j + 1))
-            image_chunk_data.chunk_max_i = image_data.min_i + (i_width * i)       # !!! inverted y axis for pixels !!!
-            image_chunk_data.chunk_min_i = image_data.min_i + (i_width * (i + 1))
-
-            list_of_chunk.append(image_chunk_data)
-
-    return list_of_chunk
+            dict_of_chunk[(chunk_min_x, chunk_min_y)] = image_chunk_data
+    return dict_of_chunk
 
 def get_resolution_steps(min, max):
     output = []
@@ -168,13 +145,13 @@ def get_chunks_steps(max):
             continue
         return output
 
-async def task_coro(session, chunk_data, url, image, image_placeholder):
+async def task_coro(session, chunk_position, chunk_data, url, image, image_placeholder):
     async with session.post(url, data = json.dumps(dataclasses.asdict(chunk_data))) as response:
         awaited_response = await response.read()
         response_as_base64 = awaited_response.decode("utf-8")
         bytes_response = base64.b64decode(response_as_base64.split(',')[1])
         sub_image = Image.open(io.BytesIO(bytes_response))
-        image.paste(sub_image, (chunk_data.chunk_min_x, chunk_data.chunk_min_y))
+        image.paste(sub_image, (chunk_position[0], chunk_position[1]))
         sub_image.close()
         image_placeholder.image(image, use_column_width="always")
 

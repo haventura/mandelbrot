@@ -54,39 +54,6 @@ func Compute_image(data model.Image_data) []byte {
 	return image
 }
 
-func Compute_image_chunck(data model.Image_chunk_data) []byte {
-	min_x := 0
-	min_y := 0
-	chunk_width := data.Chunck_width
-	chunk_height := data.Chunck_height
-	max_x := chunk_width - 1
-	max_y := chunk_height - 1
-
-	n := chunk_width * chunk_height
-	data_c := make(chan point, n)
-
-	fmt.Printf("Computing...\n")
-	wg.Add(n)
-	start_comp := time.Now()
-	for x := min_x; x <= max_x; x++ {
-		x := x
-		for y := min_y; y <= max_y; y++ {
-			y := y
-			go worker(x, y, min_x, min_y, max_x, max_y, data.Chunck_min_r, data.Chunck_max_r, data.Chunck_min_i, data.Chunck_max_i, data.Max_iteration, data_c)
-		}
-	}
-	wg.Wait()
-	close(data_c)
-	elapsed_comp := time.Since(start_comp)
-	fmt.Printf("Computing %v points over %v iterations took %s\n", n, data.Max_iteration, elapsed_comp)
-
-	start_rend := time.Now()
-	image := render(chunk_width, chunk_height, data_c, data.Colormap_name)
-	elapsed_rend := time.Since(start_rend)
-	fmt.Printf("Rendering took %s\n", elapsed_rend)
-	return image
-}
-
 func worker(x int, y int, x_min int, y_min, x_max int, y_max int, r_min float64, r_max float64, i_min float64, i_max float64, max_iteration int, data_c chan<- point) {
 	defer wg.Done()
 	r := scale_px_to_coord(x, x_min, x_max, r_min, r_max)

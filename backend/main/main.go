@@ -29,22 +29,10 @@ func handle_compute_image(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(w, output_image)
 }
 
-func handle_compute_image_chunk(w http.ResponseWriter, req *http.Request) {
-	log.Println(req.Method, req.RequestURI)
-	reqBody, _ := io.ReadAll(req.Body)
-	var data model.Image_chunk_data
-	json.Unmarshal([]byte(reqBody), &data)
-	fmt.Println(data)
-	image := compute.Compute_image_chunck(data)
-	output_image := bytes_to_base64(image)
-	fmt.Fprint(w, output_image)
-}
-
 func main() {
 	http.HandleFunc("/hello", handle_hello)
-	http.HandleFunc("/compute/single", handle_compute_image)
-	http.HandleFunc("/compute/chunk", handle_compute_image_chunk)
-	if err := http.ListenAndServe(":5000", nil); err != nil {
+	http.HandleFunc("/compute", handle_compute_image)
+	if err := http.ListenAndServe(":80", nil); err != nil {
 		log.Fatalln(err)
 	}
 }
