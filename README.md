@@ -1,8 +1,9 @@
 # Distributed Mandelbrot Generator
 
-|![mandelbrot](saved_images/mandelbrot.png)|![seahorse](saved_images/seahorse.png)|
-|:---:|:---:|:---:|
-|![valley](saved_images/valley.png)|![crown](saved_images/crown.png)|
+<img src="saved_images/mandelbrot.png" width="45%"></img>
+<img src="saved_images/seahorse.png" width="45%"></img>
+<img src="saved_images/valley.png" width="45%"></img>
+<img src="saved_images/crown.png" width="45%"></img> 
 
 ## Performance 
 
