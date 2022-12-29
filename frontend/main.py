@@ -95,7 +95,7 @@ async def main():
             </style>
             """
     st.markdown(hide_footer_style, unsafe_allow_html=True) 
-    st.caption("Made with Go and Streamlit by Andrea Ventura")
+    st.caption("Made with Go and Streamlit by Andrea Ventura. <a href=https://github.com/haventura/mandelbrot>GitHub project</a>", unsafe_allow_html=True)
 
 def update_coordinates(center_r, center_i, diameter):
     st.session_state["center_r"] = center_r
@@ -118,8 +118,8 @@ def divide_in_chunk(image_data: Image_data, n_chunk):
             image_chunk_data.height = chunk_pixel_height
             image_chunk_data.min_r = image_data.min_r + (chunk_real_width * j)
             image_chunk_data.max_r = image_data.min_r + (chunk_real_width * (j + 1))
-            image_chunk_data.max_i = image_data.min_i + (chunk_imaginary_width * i)       # !!! inverted y axis for pixels !!!
-            image_chunk_data.min_i = image_data.min_i + (chunk_imaginary_width * (i + 1))
+            image_chunk_data.min_i = image_data.max_i - (chunk_imaginary_width * (i + 1))       # !!! inverted y axis for pixels !!!
+            image_chunk_data.max_i = image_data.max_i - (chunk_imaginary_width * (i))
             image_chunk_data.max_iteration = image_data.max_iteration
             image_chunk_data.colormap_name = image_data.colormap_name
             dict_of_chunk[(chunk_min_x, chunk_min_y)] = image_chunk_data
