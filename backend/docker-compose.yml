@@ -22,8 +22,6 @@ services:
             # resources:
             #     limits:
             #         cpus: '1.0'
-        volumes:
-            - /data_volume:/app/data_volume
     # nginx container
     nginx:
         # specifies the latest nginx image

@@ -41,7 +41,7 @@ async def main():
         diameter = st.number_input("Diameter", min_value=0., max_value=6., step=0.1, format="%.15g", key="diameter")
         image_data.max_iteration = st.select_slider("Iterations", get_resolution_steps(1, 65536), value=256, key="max_iteration")
         resolution = st.select_slider("Resolution", get_resolution_steps(128, 16384), value=512, key="resolution")
-        image_data.colormap_name = st.text_input("Color map", value="BWY", key="colormap")
+        image_data.colormap_name = st.selectbox("Color map", options=["BWY","BWR","ICEFIRE","TWILIGHT"], key="colormap")
         chunks = st.checkbox('Compute in chunks')
         chunks_amount = st.select_slider("Number of chunks", get_chunks_steps(4096), value = 16)
         image_data.min_r = center_r - diameter / 2
@@ -76,11 +76,13 @@ async def main():
 
     with col3:
         st.header("Some interesting features")
+        st.subheader("🏠 Home:")
+        st.button("Try me!", key="home_button", on_click=update_coordinates, args=(-0.75, 0.0, 2.5))
         st.subheader("🌊🐎 Seahorse:")
         st.button("Try me!", key="seahorse_button", on_click=update_coordinates, args=(-0.74303, 0.126433, 0.01611))
         st.subheader("🦎 Tail:")
         st.button("Try me!", key="tail_button", on_click=update_coordinates, args=(-0.7436499, 0.13188204, 0.00073801))
-        st.subheader("👑 Crowns:")
+        st.subheader("👑 Crown:")
         st.button("Try me!", key="crown_button", on_click=update_coordinates, args=(-0.743643135, 0.131825963, 0.000014628))
         st.subheader("🛰️ Satellite:")
         st.button("Try me!", key="satellite_button", on_click=update_coordinates, args=(-0.743644786, 0.1318252536, 0.0000029336))
