@@ -2,7 +2,7 @@
 
 ## Performance 
 
-###29/12/2022
+### 29/12/2022
 
 CPU Intel Core i5-9600K (6 Cores) @ 3.70GHz, RAM 16.0 Go, computing Seahorse preset at 2048*2048px resolution, 8192 iterations.
 
