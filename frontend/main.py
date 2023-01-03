@@ -55,7 +55,7 @@ async def main():
         submitted = st.form_submit_button("Submit")
 
         if submitted:
-            url = 'http://localhost:80/compute'
+            url = 'http://nginx:80/compute'
             print(image_data)
             if not chunks:
                 response = requests.post(url, data = json.dumps(dataclasses.asdict(image_data)))

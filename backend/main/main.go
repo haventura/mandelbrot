@@ -32,7 +32,7 @@ func handle_compute_image(w http.ResponseWriter, req *http.Request) {
 func main() {
 	http.HandleFunc("/hello", handle_hello)
 	http.HandleFunc("/compute", handle_compute_image)
-	if err := http.ListenAndServe(":80", nil); err != nil {
+	if err := http.ListenAndServe(":5000", nil); err != nil {
 		log.Fatalln(err)
 	}
 }

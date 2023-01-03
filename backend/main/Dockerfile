@@ -6,11 +6,9 @@ RUN apk update && apk upgrade && \
     apk add --no-cache git
 
 # Switches to /tmp/app as the working directory, similar to 'cd'
-WORKDIR /tmp/app
+WORKDIR /tmp/app/main
 
 COPY . .
-
-WORKDIR /tmp/app/main
 
 RUN go mod download
 

@@ -1,9 +1,39 @@
 # Distributed Mandelbrot Generator
 
-<img src="saved_images/mandelbrot.png" width="24%"></img>
-<img src="saved_images/seahorse.png" width="24%"></img>
-<img src="saved_images/valley.png" width="24%"></img>
-<img src="saved_images/crown.png" width="24%"></img> 
+<img src="saved_images/mandelbrot.png" width="25%"></img>
+<img src="saved_images/seahorse.png" width="25%"></img>
+<img src="saved_images/valley.png" width="25%"></img>
+<img src="saved_images/crown.png" width="25%"></img> 
+
+## Architecture
+
+### Streamlit Frontend (async requests for chunks, etc...)
+
+blablabla
+
+### Go backend (go routines, etc...)
+
+blablabla
+
+### Docker container & NGINX load balancing.
+
+blablabla
+
+## Deployment
+
+### Locally
+
+Follow this link to create an ACI context witin Azure: https://docs.docker.com/cloud/aci-integration/
+
+### Remotely, with Azure and Docker ACI integration
+
+Using default docker context:
+docker build -t andreaventura/ecam:mandelbrot_nginx .
+docker push -t andreaventura/ecam:mandelbrot_nginx .
+repeat for all 3 images; nginx, backend, frontend 
+
+Then in docker ACI context:
+docker compose up
 
 ## Performance 
 
