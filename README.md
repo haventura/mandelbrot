@@ -1,9 +1,9 @@
 # Distributed Mandelbrot Generator
 
-<img src="saved_images/mandelbrot.png" width="25%"></img>
-<img src="saved_images/seahorse.png" width="25%"></img>
-<img src="saved_images/valley.png" width="25%"></img>
-<img src="saved_images/crown.png" width="25%"></img> 
+<img src="saved_images/mandelbrot.png" width="24.5%"></img>
+<img src="saved_images/seahorse.png" width="24.5%"></img>
+<img src="saved_images/valley.png" width="24.5%"></img>
+<img src="saved_images/crown.png" width="24.5%"></img> 
 
 ## Architecture
 
