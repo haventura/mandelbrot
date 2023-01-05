@@ -11,6 +11,7 @@ import (
 	"mandelbrot/andre/main/compute"
 	"mandelbrot/andre/main/model"
 	"net/http"
+	"os"
 )
 
 func handle_hello(w http.ResponseWriter, req *http.Request) {
@@ -30,9 +31,15 @@ func handle_compute_image(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	port, set := os.LookupEnv("GOPORT")
+	if !set {
+		port = ":5000"
+	} else {
+		port = fmt.Sprintf(":%s", port)
+	}
 	http.HandleFunc("/hello", handle_hello)
 	http.HandleFunc("/compute", handle_compute_image)
-	if err := http.ListenAndServe(":5000", nil); err != nil {
+	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatalln(err)
 	}
 }

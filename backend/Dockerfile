@@ -6,7 +6,7 @@ RUN apk update && apk upgrade && \
     apk add --no-cache git
 
 # Switches to /tmp/app as the working directory, similar to 'cd'
-WORKDIR /tmp/app/main
+WORKDIR /tmp/app
 
 COPY . .
 
@@ -26,9 +26,9 @@ FROM alpine:latest
 RUN apk add ca-certificates
 
 # Copies the binary file from the BUILD container to /app folder
-COPY --from=build /tmp/app/main/out/api /app/api
+COPY --from=build /tmp/app/out/api /app/api
 
-COPY --from=build /tmp/app/main/colormap /app/colormap
+COPY --from=build /tmp/app/colormap /app/colormap
 
 # Switches working directory to /app
 WORKDIR "/app"
