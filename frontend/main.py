@@ -8,6 +8,9 @@ import io
 import math
 from aiohttp import ClientSession, ClientTimeout
 import asyncio
+import os
+import time
+import logging
 
 @dataclasses.dataclass
 class Image_data:
@@ -27,11 +30,11 @@ async def main():
     st.title("Mandelbrot Generator")
 
     col1, col2, col3 = st.columns([1,2,1])
-    image_placeholder = col2.empty()
     if 'center_r' not in st.session_state:
         st.session_state['center_r'] = -.75
         st.session_state["center_i"] = .0
         st.session_state["diameter"] = 2.5
+        st.session_state["image_placeholder"] = col2.empty()
 
     with col1.form("my_form"):
         image_data = Image_data()
@@ -55,19 +58,25 @@ async def main():
         submitted = st.form_submit_button("Submit")
 
         if submitted:
-            url = 'http://nginx:80/compute'
-            print(image_data)
+            try:
+                addr = os.getenv('BACKEND_ADDR')
+                if not addr:
+                    addr = "nginx:80"
+            except KeyError:
+                addr = "nginx:80"
+            url = f'http://{addr}/compute'
+            logging.info(image_data)
             if not chunks:
                 response = requests.post(url, data = json.dumps(dataclasses.asdict(image_data)))
                 response_as_base64 = response.content.decode("utf-8")
                 image = base64.b64decode(response_as_base64.split(',')[1])
-                image_placeholder.image(image, use_column_width="always")
+                st.session_state["image_placeholder"].image(image, use_column_width="always")
                 col1.download_button("💾 Download", image, "mandelbrot.png", key="download_button")
             else:      
                 chunks = divide_in_chunk(image_data, chunks_amount)
                 image = Image.new("RGBA", (resolution, resolution))
                 async with ClientSession(timeout=ClientTimeout(total=3600)) as session:
-                    coros = [task_coro(session, chunk_position, chunk_data, url, image, image_placeholder) for chunk_position, chunk_data in chunks.items()]
+                    coros = [task_coro(session, chunk_position, chunk_data, url, image) for chunk_position, chunk_data in chunks.items()]
                     await asyncio.gather(*coros)
                 img_byte_arr = io.BytesIO()
                 image.save(img_byte_arr, format='PNG')
@@ -147,7 +156,7 @@ def get_chunks_steps(max):
             continue
         return output
 
-async def task_coro(session, chunk_position, chunk_data, url, image, image_placeholder):
+async def task_coro(session, chunk_position, chunk_data, url, image):
     async with session.post(url, data = json.dumps(dataclasses.asdict(chunk_data))) as response:
         awaited_response = await response.read()
         response_as_base64 = awaited_response.decode("utf-8")
@@ -155,7 +164,10 @@ async def task_coro(session, chunk_position, chunk_data, url, image, image_place
         sub_image = Image.open(io.BytesIO(bytes_response))
         image.paste(sub_image, (chunk_position[0], chunk_position[1]))
         sub_image.close()
-        image_placeholder.image(image, use_column_width="always")
+        start = time.time()
+        st.session_state["image_placeholder"].image(image, use_column_width="always")
+        end = time.time()
+        logging.info(end - start)
 
 if __name__ == '__main__':
     asyncio.run(main())
