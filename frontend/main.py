@@ -164,10 +164,7 @@ async def task_coro(session, chunk_position, chunk_data, url, image):
         sub_image = Image.open(io.BytesIO(bytes_response))
         image.paste(sub_image, (chunk_position[0], chunk_position[1]))
         sub_image.close()
-        start = time.time()
         st.session_state["image_placeholder"].image(image, use_column_width="always")
-        end = time.time()
-        logging.info(end - start)
 
 if __name__ == '__main__':
     asyncio.run(main())
