@@ -16,8 +16,6 @@ import (
 	"time"
 )
 
-var wg sync.WaitGroup
-
 type point struct {
 	x         int
 	y         int
@@ -33,13 +31,14 @@ func Compute_image(data model.Image_data) []byte {
 	data_c := make(chan point, n)
 
 	fmt.Printf("Computing...\n")
-	wg.Add(n)
+	var wg sync.WaitGroup
 	start_comp := time.Now()
+	wg.Add(n)
 	for x := 0; x < width; x++ {
 		x := x
 		for y := 0; y < height; y++ {
 			y := y
-			go worker(x, y, 0, 0, width-1, height-1, data.Min_r, data.Max_r, data.Min_i, data.Max_i, data.Max_iteration, data_c)
+			go worker(x, y, 0, 0, width-1, height-1, data.Min_r, data.Max_r, data.Min_i, data.Max_i, data.Max_iteration, data_c, &wg)
 		}
 	}
 	wg.Wait()
@@ -54,8 +53,8 @@ func Compute_image(data model.Image_data) []byte {
 	return image
 }
 
-func worker(x int, y int, x_min int, y_min, x_max int, y_max int, r_min float64, r_max float64, i_min float64, i_max float64, max_iteration int, data_c chan<- point) {
-	defer wg.Done()
+func worker(x int, y int, x_min int, y_min, x_max int, y_max int, r_min float64, r_max float64, i_min float64, i_max float64, max_iteration int, data_c chan<- point, waitgroup *sync.WaitGroup) {
+	defer waitgroup.Done()
 	r := scale_px_to_coord(x, x_min, x_max, r_min, r_max)
 	i := scale_px_to_coord(y, y_min, y_max, i_max, i_min) // !!! y-axis direction of pixels and complex-plane are inverted !!!
 	c := complex(r, i)
