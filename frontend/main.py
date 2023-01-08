@@ -9,7 +9,6 @@ import math
 from aiohttp import ClientSession, ClientTimeout
 import asyncio
 import os
-import time
 import logging
 
 @dataclasses.dataclass
@@ -22,8 +21,6 @@ class Image_data:
     min_i:         float = -1.25
     max_i:         float = 1.25
     colormap_name: str   = "BWY"
-
-# run with python -m streamlit run main.py
 
 async def main():
     st.set_page_config(page_title="Mandelbrot Generator", page_icon="🚀", layout="wide")

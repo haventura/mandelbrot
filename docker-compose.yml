@@ -1,42 +1,31 @@
-
 version: '3.3'
-
-#services describe the containers that will start
-services: 
-    # backend is the container name for our Go backend
+services:
     frontend:
-        # build: "./frontend/"
-        image: andreaventura/ecam:mandelbrot_frontend
+        build: "./frontend"
         ports:
             - "8501:8501"
+        environment:
+            - BACKEND_ADDR=nginx:80
         restart: "always"
-        networks: 
+        networks:
             - "mandelbrot.network"
     backend:
-        # build: "./backend/main"
-        image: andreaventura/ecam:mandelbrot_backend
-        # Exposes the port 5000 from a container and binds it to a random port
+        build: "./backend"
         ports:
-            - "5000:5000"
-        # If the container goes down, it will restart
+            - "5000"
+        environment:
+            - GOPORT=5000
         restart: "always"
-        # Connects the backend to a common mandelbrot.network bridge
+        deploy:
+            replicas: 3
+            resources:
+                limits:
+                    cpus: '1.0'
         networks: 
             - "mandelbrot.network"
-        # cpuset: "0-5"
-        # Starts up 6 replicas of the same image
-        # deploy:
-        #     replicas: 6
-        #     resources:
-        #         limits:
-        #             cpus: '1.0'
     nginx:
         build: "./nginx"
-        # image: andreaventura/ecam:mandelbrot_nginx
-        # Connects the conf file of the container to the conf file in our folder
-        # volumes:
-        #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-        depends_on: 
+        depends_on:
             - backend
         ports: 
             - "80:80"

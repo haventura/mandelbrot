@@ -1,7 +1,5 @@
 package main
 
-// run with go run main.go
-// or  docker-compose --compatibility up --build
 import (
 	"encoding/base64"
 	"encoding/json"
